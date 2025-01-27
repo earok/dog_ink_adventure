@@ -14,18 +14,18 @@ VAR DogThirsty = 10
     -> tunnel_dog_hungry ->->
 }
 
--> Tunnel_Pathfind(DogRoom,PlayerRoom) ->
-~ MoveDog()
+~ MoveDog(PathFind(DogRoom,PlayerRoom))
 
 ->->
 
 
 === tunnel_dog_thirsty
--> Tunnel_Pathfind(DogRoom,WaterBowl_Room) ->
-{ DogRoom != Pathfinding_Next_Room:
-    ~ MoveDog()
+~ temp nextRoom = PathFind(DogRoom,WaterBowl_Room)
+{ DogRoom != nextRoom:
+    ~ MoveDog(nextRoom)
     ->->
 }
+
 { WaterBowl_IsFull && ItemInInventory(WaterBowl) == false:
     Dog is drinking from the water bowl.
     ~ DogThirsty = 0
@@ -36,9 +36,9 @@ Dog is barking at the water bowl.
 ->->
 
 === tunnel_dog_hungry
--> Tunnel_Pathfind(DogRoom,FoodBowl_Room) ->
-{ DogRoom != Pathfinding_Next_Room:
-    ~ MoveDog()
+~ temp nextRoom = PathFind(DogRoom,WaterBowl_Room)
+{ DogRoom != nextRoom:
+    ~ MoveDog(nextRoom)
     ->->
 }
 { FoodBowl_IsFull && ItemInInventory(FoodBowl) == false:
@@ -51,17 +51,17 @@ Dog is barking at the food bowl.
 ->->
 
 
-=== function MoveDog()
-{ DogRoom != Pathfinding_Next_Room:
+=== function MoveDog(NextDogRoom)
+{ DogRoom != NextDogRoom:
     
-    { PlayerRoom == Pathfinding_Next_Room:
-        The dog has entered the {Pathfinding_Next_Room} from the {DogRoom}
+    { PlayerRoom == NextDogRoom:
+        The dog has entered the {NextDogRoom} from the {DogRoom}
     }
     
     { PlayerRoom == DogRoom:
-        The dog has left in the direction of the {Pathfinding_Next_Room}
+        The dog has left in the direction of the {NextDogRoom}
     }    
     
-    ~ DogRoom = Pathfinding_Next_Room
+    ~ DogRoom = NextDogRoom
 }
 ~ return
