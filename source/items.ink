@@ -30,3 +30,31 @@ VAR WaterBowl_IsFull = false
         ~ WaterBowl_Room = to
 }
 ~ return
+
+=== GeneratePickupOptions(items)
+//No more items need to be added to the list
+{ LIST_COUNT(items) == 0:
+    -> DONE
+}
+~ temp thisItem = LIST_MIN(items)
+<- GeneratePickupOptions(items - thisItem)
+
++ [ Pick up {thisItem} ] 
+    ~ TransferItem(thisItem,Player)
+    -> tick
+
+- -> DONE
+
+=== GenerateDropOptions(items)
+//No more items need to be added to the list
+{ LIST_COUNT(items) == 0:
+    -> DONE
+}
+~ temp thisItem = LIST_MIN(items)
+<- GenerateDropOptions(items - thisItem)
+
++ [ Drop {thisItem} ] 
+    ~ TransferItem(thisItem,PlayerRoom)
+    -> tick
+
+- -> DONE

@@ -49,17 +49,30 @@ VAR LawnTapIsOn = false
 }
 ~ temp roomsToCheckNow = ()
 ~ roomsToCheckNow += to
-~ return PathFindRecursively(roomsToCheckNow,(),from)
+~ return PathFindRecursively(roomsToCheckNow,(),(),from)
 
-//Inner recusrive function for pathfinding
-=== function PathFindRecursively(roomsToCheckNow, roomsToCheckNext, startingPoint)
+=== GenerateRoomOptions(rooms)
+//No more rooms need to be added to the list
+{ LIST_COUNT(rooms) == 0:
+    -> DONE
+}
+~ temp thisRoom = LIST_MIN(rooms)
+<- GenerateRoomOptions(rooms - thisRoom)
+
++ [ Go to {thisRoom} ] 
+    ~ Goto(thisRoom)
+    -> tick
+
+- -> DONE
+
+//Inner recursive function for pathfinding
+=== function PathFindRecursively(roomsToCheckNow, roomsToCheckNext, roomsToExclude, startingPoint)
 { LIST_COUNT(roomsToCheckNow) == 0:
     //We're out of rooms in the current list to check, go to the next list
-    ~ roomsToCheckNow = roomsToCheckNext
+    ~ roomsToCheckNow = roomsToCheckNext - roomsToExclude
     ~ roomsToCheckNext = ()
 }
 
-//Pop the first room off the list
 ~ temp roomToCheck = LIST_MIN(roomsToCheckNow)
 ~ roomsToCheckNow -= roomToCheck
 
@@ -68,10 +81,12 @@ VAR LawnTapIsOn = false
     ~ return roomToCheck
 }
 
+//We don't need to check this room again
+~ roomsToExclude += roomToCheck
+
 //Otherwise, populate rooms to check next with all adjacent rooms, and dig deeper
-//(Could be made more efficient by excluding rooms we've already checked)
 ~ roomsToCheckNext += AdjacentTo(roomToCheck)
-~ return PathFindRecursively(roomsToCheckNow,roomsToCheckNext,startingPoint)
+~ return PathFindRecursively(roomsToCheckNow,roomsToCheckNext,roomsToExclude,startingPoint)
 
 
 

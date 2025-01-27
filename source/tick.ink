@@ -38,65 +38,21 @@ You are in the {PlayerRoom}.
     ~ LawnTapIsOn = false
     -> tick
 
-+ {AdjacentTo(PlayerRoom) has Bedroom } [ Go into bedroom ]
-    ~ Goto(Bedroom)
-    -> tick
++ [ Go to ]
+    -> GotoMenu
 
-+ {AdjacentTo(PlayerRoom) has Hallway } [ Go into hallway ]
-    ~ Goto(Hallway)
-    -> tick
-
-+ {AdjacentTo(PlayerRoom) has Bathroom } [ Go into bathroom ]
-    ~ Goto(Bathroom)
-    -> tick
-
-+ {AdjacentTo(PlayerRoom) has Staircase } [ Go to staircase ]
-    ~ Goto(Staircase)
-    -> tick
-
-+ {AdjacentTo(PlayerRoom) has LivingRoom } [ Go to the living room ]
-    ~ Goto(LivingRoom)
-    -> tick
-
-+ {AdjacentTo(PlayerRoom) has Kitchen } [ Go to the kitchen ]
-    ~ Goto(Kitchen)
-    -> tick
-
-+ {AdjacentTo(PlayerRoom) has Lawn } [ Go outside ]
-    ~ Goto(Lawn)
-    -> tick
-    
-+ {AdjacentTo(PlayerRoom) has Pantry } [ Go to the pantry ]
-    ~ Goto(Pantry)
-    -> tick    
-    
 + [ Wait ]
     -> tick
 
+=== GotoMenu
+<- GenerateRoomOptions(AdjacentTo(PlayerRoom))
++ [ Never mind ] -> tick
+
 === PickupItemMenu
-+ { Item_IsInRoom(PlayerRoom,FoodBowl) } [ Pick up dog's food bowl ]
-    ~ TransferItem(FoodBowl,Player)
-
-+ { Item_IsInRoom(PlayerRoom,WaterBowl) } [ Pick up dog's water bowl ]
-    ~ TransferItem(WaterBowl,Player)
-
-+ [ Never mind ]
-
--
--> tick
+<- GeneratePickupOptions(AllItems_InRoom(PlayerRoom))
++ [ Never mind ] -> tick
 
 === DropItemMenu
-
-+ { Item_IsInRoom(Player,FoodBowl) } [ Drop dog's food bowl ]
-    ~ TransferItem(FoodBowl,PlayerRoom)
-
-+ { Item_IsInRoom(Player,WaterBowl) } [ Drop dog's water bowl ]
-    ~ TransferItem(WaterBowl,PlayerRoom)
-
-+ [ Never mind ]
-
--
--> tick
-
-
+<- GenerateDropOptions(AllItems_InRoom(Player))
++ [ Never mind ] -> tick
 

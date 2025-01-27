@@ -14,6 +14,10 @@ VAR DogThirsty = 10
     -> tunnel_dog_hungry ->->
 }
 
+{ DogRoom == PlayerRoom:
+    The dog is here, and looks happy.
+    ->->
+}
 ~ MoveDog(PathFind(DogRoom,PlayerRoom))
 
 ->->
@@ -36,7 +40,7 @@ Dog is barking at the water bowl.
 ->->
 
 === tunnel_dog_hungry
-~ temp nextRoom = PathFind(DogRoom,WaterBowl_Room)
+~ temp nextRoom = PathFind(DogRoom,FoodBowl_Room)
 { DogRoom != nextRoom:
     ~ MoveDog(nextRoom)
     ->->
