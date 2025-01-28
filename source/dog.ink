@@ -24,7 +24,7 @@ VAR DogThirsty = MaxDogThirst
     //The player is already holding it, so chase the player
     -   HasItem(Stick):
         { NPCMove(Dog,Player) == false:
-            The dog is trying to wrestle the stick from you
+            The dog is trying to wrestle the stick from you.
         }
 
     //The dog has the stick already, so bring to the palyer
@@ -53,7 +53,7 @@ VAR DogThirsty = MaxDogThirst
     ->->
 }
 
-{ IsFull has WaterBowl && GetRoom(WaterBowl) == GetRoom(Dog):
+{ IsFull has WaterBowl && AreInSameRoom(WaterBowl,Dog):
     Dog is drinking from the water bowl.
     ~ DogThirsty = 0
     ~ IsFull -= WaterBowl
@@ -63,12 +63,12 @@ Dog is barking at the water bowl.
 ->->
 
 === tunnel_dog_hungry
-{ NPCMove(Dog,WaterBowl) == true:
+{ NPCMove(Dog,FoodBowl) == true:
     //Moving towards food bowl
     ->->
 }
 
-{ IsFull has FoodBowl && GetRoom(FoodBowl) == GetRoom(Dog):
+{ IsFull has FoodBowl && AreInSameRoom(FoodBowl,Dog):
     Dog has eaten all of the food.
     ~ DogHungry = 0
     ~ IsFull -= FoodBowl
