@@ -1,71 +1,80 @@
-VAR DogRoom = Bedroom
-VAR DogHungry = 20
-VAR DogThirsty = 10
+CONST MaxDogHunger = 40
+CONST MaxDogThirst = 20
+
+VAR DogHungry = MaxDogHunger
+VAR DogThirsty = MaxDogThirst
+
+~ DeclareCharacter(Dog,Bedroom)
 
 === tunnel_dog_tick
 
 ~ DogHungry += 1
 ~ DogThirsty += 1
 
-{ DogThirsty > 10:
-    -> tunnel_dog_thirsty ->->
-}
-{ DogHungry > 20:
-    -> tunnel_dog_hungry ->->
-}
+{ 
+    //The dog is thirsty
+    - DogThirsty > MaxDogThirst:
+        -> tunnel_dog_thirsty ->
+        
+    //The dog is hungry
+    - DogHungry > MaxDogHunger:
+        -> tunnel_dog_hungry ->
+        
+    //The dog wants to play with the stick
+    //The player is already holding it, so chase the player
+    -   HasItem(Stick):
+        { NPCMove(Dog,Player) == false:
+            The dog is trying to wrestle the stick from you
+        }
 
-{ DogRoom == PlayerRoom:
-    The dog is here, and looks happy.
-    ->->
-}
-~ MoveDog(PathFind(DogRoom,PlayerRoom))
+    //The dog has the stick already, so bring to the palyer
+    -  Owner(Stick) == Dog:
+        { NPCMove(Dog,Player) == false:
+            The dog has dropped the stick in front of you.
+            ~ DropItem(Stick)
+        }
+        
+    - NPCMove(Dog,Stick):
+        //The dog is moving towards stick
 
+    - AreInSameRoom(Dog,Player):
+        The dog is shyly looking at you and the stick.
+
+    - else:
+        //The dog must have reached the stick, pick it up "off screen"
+        ~ PickUpItem(Dog,Stick)
+}
 ->->
 
 
 === tunnel_dog_thirsty
-~ temp nextRoom = PathFind(DogRoom,WaterBowl_Room)
-{ DogRoom != nextRoom:
-    ~ MoveDog(nextRoom)
+{ NPCMove(Dog,WaterBowl) == true:
+    //Moving towards water bowl
     ->->
 }
 
-{ WaterBowl_IsFull && ItemInInventory(WaterBowl) == false:
+{ IsFull has WaterBowl && GetRoom(WaterBowl) == GetRoom(Dog):
     Dog is drinking from the water bowl.
     ~ DogThirsty = 0
-    ~ WaterBowl_IsFull = false
+    ~ IsFull -= WaterBowl
     ->->
 }
 Dog is barking at the water bowl.
 ->->
 
 === tunnel_dog_hungry
-~ temp nextRoom = PathFind(DogRoom,FoodBowl_Room)
-{ DogRoom != nextRoom:
-    ~ MoveDog(nextRoom)
+{ NPCMove(Dog,WaterBowl) == true:
+    //Moving towards food bowl
     ->->
 }
-{ FoodBowl_IsFull && ItemInInventory(FoodBowl) == false:
+
+{ IsFull has FoodBowl && GetRoom(FoodBowl) == GetRoom(Dog):
     Dog has eaten all of the food.
     ~ DogHungry = 0
-    ~ FoodBowl_IsFull = false
+    ~ IsFull -= FoodBowl
     ->->
 }
 Dog is barking at the food bowl.
 ->->
 
 
-=== function MoveDog(NextDogRoom)
-{ DogRoom != NextDogRoom:
-    
-    { PlayerRoom == NextDogRoom:
-        The dog has entered the {NextDogRoom} from the {DogRoom}
-    }
-    
-    { PlayerRoom == DogRoom:
-        The dog has left in the direction of the {NextDogRoom}
-    }    
-    
-    ~ DogRoom = NextDogRoom
-}
-~ return

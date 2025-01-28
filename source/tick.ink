@@ -1,41 +1,34 @@
 === tick
-You are in the {PlayerRoom}.
+You are in the {GetRoom(Player)}.
 
 -> tunnel_dog_tick ->
 
-{ LawnTapIsOn:
-    
-    { PlayerRoom == Lawn:
-        The tap is currently running.
-    }
-    
-    { Item_IsInRoom(Lawn,WaterBowl) && WaterBowl_IsFull == false:
-        ~ WaterBowl_IsFull = true
-        { PlayerRoom == Lawn:
-            The waterbowl is now full.
-        }
-    }
-    
+{ RunningTaps has GetRoom(Player):
+    The tap is currently running.
 }
 
-{ Item_IsInRoom(PlayerRoom,FoodBowl): The dog's food bowl is here, and it is {FoodBowl_IsFull:full of food|empty}.} 
-{ Item_IsInRoom(PlayerRoom,WaterBowl): The dog's water bowl is here, and it is {WaterBowl_IsFull:full of water|empty}.} 
+~ DescribeAllItems()
 
-+ { Item_IsInRoom(Player,FoodBowl) && PlayerRoom == Pantry && FoodBowl_IsFull == false } [ Put food in dog's food bowl ]
++ { HasItem(FoodBowl) && HasFood(GetRoom(Player)) && IsFull hasnt FoodBowl } [ Put food in dog's food bowl ]
     You've filled the dog's bowl with food
-    ~ FoodBowl_IsFull = true
+    ~ IsFull += FoodBowl
     -> tick
+    
++ { HasItem(WaterBowl) && RunningTaps has GetRoom(Player) && IsFull hasnt WaterBowl } [ Put water in dog's water bowl ]
+    You've filled the dog's bowl with water
+    ~ IsFull += WaterBowl
+    -> tick    
 
-+ { LIST_COUNT(AllItems_InRoom(PlayerRoom)) > 0 } [ Pick up item ] -> PickupItemMenu
++ { LIST_COUNT(AllItems_InRoom(GetRoom(Player))) > 0 } [ Pick up item ] -> PickupItemMenu
 
 + { LIST_COUNT(AllItems_InRoom(Player)) > 0 } [ Drop item ] -> DropItemMenu
 
-+ { PlayerRoom == Lawn && LawnTapIsOn == false } [ Turn on tap ]
-    ~ LawnTapIsOn = true
++ { HasTap(GetRoom(Player)) && RunningTaps hasnt GetRoom(Player) } [ Turn on tap ]
+    ~ RunningTaps += GetRoom(Player)
     -> tick
 
-+ { PlayerRoom == Lawn && LawnTapIsOn == true } [ Turn off tap ]
-    ~ LawnTapIsOn = false
++ { RunningTaps has GetRoom(Player) == true } [ Turn off tap ]
+    ~ RunningTaps -= GetRoom(Player)
     -> tick
 
 + [ Go to ]
@@ -45,11 +38,11 @@ You are in the {PlayerRoom}.
     -> tick
 
 === GotoMenu
-<- GenerateRoomOptions(AdjacentTo(PlayerRoom))
+<- GenerateRoomOptions(AdjacentTo(GetRoom(Player)))
 + [ Never mind ] -> tick
 
 === PickupItemMenu
-<- GeneratePickupOptions(AllItems_InRoom(PlayerRoom))
+<- GeneratePickupOptions(AllItems_InRoom(GetRoom(Player)))
 + [ Never mind ] -> tick
 
 === DropItemMenu

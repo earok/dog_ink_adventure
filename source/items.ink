@@ -1,35 +1,69 @@
-LIST Items = FoodBowl, WaterBowl
+~ DeclareItem(FoodBowl,Kitchen)
+~ DeclareItem(WaterBowl,Lawn)
+~ DeclareItem(Stick,Bedroom)
 
-VAR FoodBowl_Room = Kitchen
-VAR WaterBowl_Room = Lawn
+=== function DescribeAllItems()
+~ temp itemList = ()
+~ itemList += AllItems_InRoom(GetRoom(Player))
+~ DescribeAllItems_Inner(itemList)
+~ return
 
-VAR FoodBowl_IsFull = false
-VAR WaterBowl_IsFull = false
+=== function DescribeAllItems_Inner(itemList)
+{ LIST_COUNT(itemList) > 0:
+    ~ temp item = LIST_MIN(itemList)
+    ~ DescribeItem(item)
+    ~ DescribeAllItems_Inner(itemList - item)
+}
+~ return
 
-=== function ItemInInventory(item)
-~ return Item_IsInRoom(Player,item) == true
+=== function DescribeItem(item)
+{ 
+    - CanBeFilled has item:
+        The {item} is here, and it is {IsFull has item:full|empty}.
+    - else:
+        The {item} is here.
+}
+~ return
+
+=== function Owner(item)
+{ Characters has GetRoom(item):
+    ~ return GetRoom(item)
+}
+~ return NA
+
+=== function PickUpItem(character,item)
+~ SetRoom(item,character)
+~ return
+
+//We don't need to know the character when dropping an item, as we'll work that out
+=== function DropItem(item)
+~ SetRoom(item,GetRoom(Owner(item)))
+~ return
+
+=== function HasItem(item)
+~ return Owner(item) == Player
 
 === function AllItems_InRoom(room)
-~ temp ListResult = ()
-{ FoodBowl_Room == room:
-    ~ ListResult += FoodBowl
+~ temp itemList = ()
+~ itemList += Items
+~ return AllItems_InRoom_Recursive(room,itemList,())
+
+=== function AllItems_InRoom_Recursive(room,list,outList)
+{ LIST_COUNT(list) == 0:
+    //We're finished
+    ~ return outList
 }
-{ WaterBowl_Room == room:
-    ~ ListResult += WaterBowl
+
+//Check that the next item on the list is in this room
+~ temp nextItem = LIST_MIN(list)
+~ list -= nextItem
+{ GetRoom(nextItem) == room:
+    ~ outList += nextItem
 }
-~ return ListResult
+~ return AllItems_InRoom_Recursive(room,list,outList)
 
 === function Item_IsInRoom(room,item)
 ~ return AllItems_InRoom(room) has item
-
-=== function TransferItem(item,to)
-{ item:
-    - FoodBowl:
-        ~ FoodBowl_Room = to
-    - WaterBowl:
-        ~ WaterBowl_Room = to
-}
-~ return
 
 === GeneratePickupOptions(items)
 //No more items need to be added to the list
@@ -40,7 +74,7 @@ VAR WaterBowl_IsFull = false
 <- GeneratePickupOptions(items - thisItem)
 
 + [ Pick up {thisItem} ] 
-    ~ TransferItem(thisItem,Player)
+    ~ PickUpItem(Player,thisItem)
     -> tick
 
 - -> DONE
@@ -54,7 +88,7 @@ VAR WaterBowl_IsFull = false
 <- GenerateDropOptions(items - thisItem)
 
 + [ Drop {thisItem} ] 
-    ~ TransferItem(thisItem,PlayerRoom)
+    ~ DropItem(thisItem)
     -> tick
 
 - -> DONE
